@@ -2,6 +2,8 @@ package com.project.foodbook.controller;
 
 import java.util.List;
 
+import javax.mail.MessagingException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,14 +16,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.project.foodbook.controller.dto.DeleteDTO;
 import com.project.foodbook.controller.dto.GetRecepiesDTO;
 import com.project.foodbook.controller.dto.GetSingleRecepieDTO;
 import com.project.foodbook.controller.dto.ReceptDTO;
 import com.project.foodbook.controller.dto.ResponseMessageDTO;
 import com.project.foodbook.domain.Recept;
 import com.project.foodbook.security.SecurityUtils;
+import com.project.foodbook.service.MailService;
 import com.project.foodbook.service.ReceptService;
+import com.project.foodbook.service.UserService;
 
 @RestController
 @RequestMapping("/api/recepti")
@@ -31,14 +34,21 @@ public class ReceptController {
 	private ReceptService receptService;
 	
 	@Autowired
+	private MailService mailService;
+	
+	@Autowired
 	private SecurityUtils securityUtils;
 	
+	@Autowired
+	private UserService userService;
+	
 	@PostMapping("")
-	public ResponseEntity<Recept> createRecept(@RequestBody ReceptDTO receptDTO) {
+	public ResponseEntity<Recept> createRecept(@RequestBody ReceptDTO receptDTO) throws MessagingException {
 		String username = securityUtils.getCurrentUserLoginByUsername().get();
 		Recept recept = receptService.createRecept(receptDTO.getName(), receptDTO.getDescription(), 
 				username);
 		System.out.println(securityUtils.getCurrentUserLoginByUsername().get()); //daje username
+		mailService.sendRecepieToAll(userService.getAllUsers(), recept);
 		return new ResponseEntity<>(recept, HttpStatus.CREATED);
 	}
 	

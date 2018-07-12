@@ -1,5 +1,7 @@
 package com.project.foodbook.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,5 +22,9 @@ public class UserService {
 	
 	public User getUserByUsername(String username) {
 		return userRepository.findOneByUsername(username);
+	}
+	
+	public List<User> getAllUsers(){
+		return userRepository.findAll();
 	}
 }
