@@ -20,6 +20,7 @@ import com.project.foodbook.controller.dto.GetSingleRecepieDTO;
 import com.project.foodbook.controller.dto.ReceptDTO;
 import com.project.foodbook.controller.dto.ResponseMessageDTO;
 import com.project.foodbook.domain.Recept;
+import com.project.foodbook.security.SecurityUtils;
 import com.project.foodbook.service.ReceptService;
 
 @RestController
@@ -29,23 +30,29 @@ public class ReceptController {
 	@Autowired
 	private ReceptService receptService;
 	
+	@Autowired
+	private SecurityUtils securityUtils;
+	
 	@PostMapping("")
 	public ResponseEntity<Recept> createRecept(@RequestBody ReceptDTO receptDTO) {
+		String username = securityUtils.getCurrentUserLoginByUsername().get();
 		Recept recept = receptService.createRecept(receptDTO.getName(), receptDTO.getDescription(), 
-				receptDTO.getCreatedBy());
-		
+				username);
+		System.out.println(securityUtils.getCurrentUserLoginByUsername().get()); //daje username
 		return new ResponseEntity<>(recept, HttpStatus.CREATED);
 	}
 	
-	@GetMapping("/")
+	@GetMapping("")
 	public ResponseEntity<GetRecepiesDTO> getAllRecepies(){
 		List<Recept> tempList = receptService.getAll();
+		System.out.println(securityUtils.getCurrentUserLoginByUsername().get());
 		return new ResponseEntity<>(new GetRecepiesDTO(tempList, "uspesno"), HttpStatus.OK);
 	}
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<GetSingleRecepieDTO> getSingleRecepie(@PathVariable("id") Long id) {
 		Recept recept = receptService.getSingleRecept(id);
+		System.out.println(securityUtils.getCurrentUserLoginByUsername().get());
 		return new ResponseEntity<>(new GetSingleRecepieDTO(recept.getId(), recept.getName(),
 				recept.getDescription(), recept.getCreatedBy()), HttpStatus.OK);
 	}
@@ -53,6 +60,7 @@ public class ReceptController {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<ResponseMessageDTO> deleteRecept(@PathVariable("id") Long id){
 		Recept recept = receptService.deleteRecept(id);
+		System.out.println(securityUtils.getCurrentUserLoginByUsername().get());
 		if(recept == null){
 			return new ResponseEntity<>(new ResponseMessageDTO("Neuspesno brisanje"), HttpStatus.BAD_REQUEST);
 		}
@@ -63,6 +71,7 @@ public class ReceptController {
 	public ResponseEntity<ResponseMessageDTO> editRecepie(@PathVariable("id") Long id, @RequestBody ReceptDTO receptDTO){
 		Recept recept = receptService.editRecept(id, receptDTO.getName(), receptDTO.getDescription(), 
 				receptDTO.getCreatedBy());
+		System.out.println(securityUtils.getCurrentUserLoginByUsername().get());
 		if(recept == null){
 			return new ResponseEntity<>(new ResponseMessageDTO("Neuspesna izmena recepta"), HttpStatus.BAD_REQUEST);
 		}
